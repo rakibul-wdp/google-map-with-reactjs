@@ -1,27 +1,45 @@
 import './App.css';
-const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
+import mapboxgl from 'mapbox-gl';
+import { useEffect, useRef, useState } from 'react';
+
+mapboxgl.accessToken = 'pk.eyJ1IjoicmFraWJ1bC13ZHAiLCJhIjoiY2w3ZDQwYnJ5MHowaTNvbnhkbDczazZnaSJ9.DRWD06dzy6vem5zu0mfrbA';
+
+// const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
 
 function App() {
-  mapboxgl.accessToken =
-    'pk.eyJ1IjoicmFraWJ1bC13ZHAiLCJhIjoiY2w3ZDQwYnJ5MHowaTNvbnhkbDczazZnaSJ9.DRWD06dzy6vem5zu0mfrbA';
-  const map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11',
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+  const [lng, setLng] = useState(-70.9);
+  const [lat, setLat] = useState(42.35);
+  const [zoom, setZoom] = useState(9);
+
+  useEffect(() => {
+    if (map.current) return; // initialize map only once
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [lng, lat],
+      zoom: zoom,
+    });
   });
-  return <div id='map'>{map}</div>;
+
+  useEffect(() => {
+    if (!map.current) return; // wait for map to initialize
+    map.current.on('move', () => {
+      setLng(map.current.getCenter().lng.toFixed(4));
+      setLat(map.current.getCenter().lat.toFixed(4));
+      setZoom(map.current.getZoom().toFixed(2));
+    });
+  });
+
+  return (
+    <div>
+      <div className='sidebar'>
+        Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+      </div>
+      <div ref={mapContainer} className='map-container' />
+    </div>
+  );
 }
 
 export default App;
-
-/* 
-
-var mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-
-mapboxgl.accessToken = 'pk.eyJ1IjoicmFraWJ1bC13ZHAiLCJhIjoiY2w3ZDQwYnJ5MHowaTNvbnhkbDczazZnaSJ9.DRWD06dzy6vem5zu0mfrbA';
-var map = new mapboxgl.Map({
-  container: 'YOUR_CONTAINER_ELEMENT_ID',
-  style: 'mapbox://styles/mapbox/streets-v11'
-});
-
-
-*/
